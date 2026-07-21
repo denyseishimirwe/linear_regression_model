@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
@@ -55,7 +55,7 @@ ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1",
     "http://127.0.0.1:8080",
-    "https://YOUR-RENDER-APP-NAME.onrender.com",  # TODO: replace after deploying
+    "https://student-exam-predictor-ae37.onrender.com",
 ]
 
 app.add_middleware(
@@ -81,6 +81,26 @@ with open(FEATURE_ORDER_PATH) as f:
 DIET_ORDER = {"Poor": 0, "Fair": 1, "Good": 2}
 INTERNET_ORDER = {"Poor": 0, "Average": 1, "Good": 2}
 
+# Maps for case-insensitive matching: lowercase input -> correctly-cased value
+_DIET_CHOICES = ["Poor", "Fair", "Good"]
+_INTERNET_CHOICES = ["Poor", "Average", "Good"]
+_GENDER_CHOICES = ["Male", "Female", "Other"]
+_YES_NO_CHOICES = ["Yes", "No"]
+_PARENTAL_ED_CHOICES = ["High School", "Bachelor", "Master", "Unknown"]
+
+
+def _normalize_choice(value, choices: list[str], field_name: str) -> str:
+    """Matches the input against allowed choices regardless of case
+    (e.g. 'yes', 'YES', 'Yes' all resolve to 'Yes'), so the API is
+    forgiving of how the client (Flutter app, Swagger UI, curl, etc.)
+    capitalizes its input."""
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} must be a string")
+    for choice in choices:
+        if value.strip().lower() == choice.lower():
+            return choice
+    raise ValueError(f"{field_name} must be one of {choices} (case-insensitive), got '{value}'")
+
 
 # ---------------------------------------------------------------------------
 # Request schema (data types + range constraints via Pydantic)
@@ -99,6 +119,36 @@ class StudentInput(BaseModel):
     part_time_job: Literal["Yes", "No"]
     extracurricular_participation: Literal["Yes", "No"]
     parental_education_level: Literal["High School", "Bachelor", "Master", "Unknown"]
+
+    @field_validator("diet_quality", mode="before")
+    @classmethod
+    def _v_diet(cls, v):
+        return _normalize_choice(v, _DIET_CHOICES, "diet_quality")
+
+    @field_validator("internet_quality", mode="before")
+    @classmethod
+    def _v_internet(cls, v):
+        return _normalize_choice(v, _INTERNET_CHOICES, "internet_quality")
+
+    @field_validator("gender", mode="before")
+    @classmethod
+    def _v_gender(cls, v):
+        return _normalize_choice(v, _GENDER_CHOICES, "gender")
+
+    @field_validator("part_time_job", mode="before")
+    @classmethod
+    def _v_job(cls, v):
+        return _normalize_choice(v, _YES_NO_CHOICES, "part_time_job")
+
+    @field_validator("extracurricular_participation", mode="before")
+    @classmethod
+    def _v_extra(cls, v):
+        return _normalize_choice(v, _YES_NO_CHOICES, "extracurricular_participation")
+
+    @field_validator("parental_education_level", mode="before")
+    @classmethod
+    def _v_parent_ed(cls, v):
+        return _normalize_choice(v, _PARENTAL_ED_CHOICES, "parental_education_level")
 
     class Config:
         json_schema_extra = {
