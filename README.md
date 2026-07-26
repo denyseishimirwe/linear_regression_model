@@ -11,7 +11,7 @@ This project investigates how student wellbeing (sleep, mental health, exercise,
 ## Live Links
 
 - **API (Swagger UI):** https://student-exam-predictor-ae37.onrender.com/docs
-- **Video Demo:** _[YouTube link to be added]_
+- **Video Demo:** https://youtu.be/I1W6JIF-Yak
 
 > Note: the API is hosted on Render's free tier, which spins down after inactivity. The first request after idle time may take 30-60 seconds to respond while the server wakes up.
 
@@ -103,4 +103,4 @@ Then visit `http://127.0.0.1:8000/docs` for the local Swagger UI.
    ```bash
    flutter run
    ```
-4. The app is a single page with 13 input fields (study habits, wellbeing, and background), a **Predict Score** button, and a result area that displays the predicted exam score or a validation error message. It is already configured to call the live Render API — no additional setup is required to get a prediction.
+4. The app is a single page with 13 input fields (study habits, wellbeing, and background), a **Predict Score** button, and a result area that displays the predicted exam score or a validation error message. It is already configured to call the live Render API  no additional setup is required to get a prediction.
