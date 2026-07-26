@@ -69,7 +69,7 @@ Both gradient-descent-based linear regression models substantially outperform th
 The FastAPI app (`summative/API/prediction.py`) exposes:
 
 - **`POST /predict`** — accepts 13 student attributes (validated with Pydantic — enforced types and range constraints) and returns a predicted exam score.
-- **`POST /retrain`** — accepts an uploaded CSV of new student data and retrains the model on the spot, replacing the deployed model with the freshly trained one.
+- **`POST /retrain`** — a manual retraining trigger: accepts an uploaded CSV of new student data and retrains the model on the spot, immediately replacing the deployed model with the freshly trained one. This is intentionally a manual, on-demand trigger rather than a fully automated pipeline that watches for new data on its own — a simpler, more reliable design for this project's scope, while still giving a real, working way to update the model without redeploying the service.
 
 **CORS configuration:** origins, methods, and headers are explicitly restricted rather than using a wildcard (`*`). Only known client origins (localhost for local testing, the deployed Render URL for Swagger UI) are allowed; only `GET`/`POST` methods are permitted since those are the only ones the API uses; only `Content-Type`/`Authorization` headers are allowed; credentials are disabled since the API is stateless and does not use cookies or sessions.
 
@@ -103,4 +103,4 @@ Then visit `http://127.0.0.1:8000/docs` for the local Swagger UI.
    ```bash
    flutter run
    ```
-4. The app is a single page with 13 input fields (study habits, wellbeing, and background), a **Predict Score** button, and a result area that displays the predicted exam score or a validation error message. It is already configured to call the live Render API  no additional setup is required to get a prediction.
+4. The app is a single page with 13 input fields (study habits, wellbeing, and background), a **Predict Score** button, and a result area that displays the predicted exam score or a validation error message. It is already configured to call the live Render API - no additional setup is required to get a prediction.
